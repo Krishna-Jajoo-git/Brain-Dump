@@ -14,4 +14,13 @@ router.post('/',async(req,res)=>{
     }
 })
 
+router.get('/',async (req,res)=>{
+    try{
+        const allNotes= await Note.find();
+        res.status(200).json(allNotes);
+    }catch(error){
+        res.status(500).json({Error : error.massage})
+    }
+})
+
 export default router
