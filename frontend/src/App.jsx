@@ -1,121 +1,117 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState,useEffect } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+function App(){
+    const [notes,setNotes]=useState([]);
+    const [title,setTitle]=useState('');
+    const [description,setDescription]=useState('');
+    const API_URL=import.meta.env.VITE_API_URL
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    const fetchNotes=async()=>{
+        try{
+            const response =await fetch(`${API_URL}/api/notes`)
+            const data=await response.json()
+            setNotes(data)
+        }catch(err){
+            console.error("Connection Failed :",err)
+        }
+    }
+
+    useEffect(()=>{
+        fetchNotes();  
+    },[])
+
+const handleAddNote=async ()=>{
+    if(!title || !description){
+        return alert("Fill both fields")
+    }
+    try{
+        const response=await fetch(`${API_URL}/api/notes`,{
+            method:"POST",
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({title,description})
+        })
+        if(response.ok){
+            setTitle('')
+            setDescription('')
+            fetchNotes();
+        }}catch(err){
+            console.log("error :",err)
+            }
+    }
+
+    return(
+    <div style={{ backgroundColor: '#f0f2f5', minHeight: '100vh', padding: '40px 20px', fontFamily: 'system-ui' }}>
+        <h1 style={{ 
+            textAlign: 'center',
+            color: '#1a1a1a',
+            marginBottom: '30px' 
+            }}>🧠 Brain Dump</h1>
+        <hr style={{ border: '0', borderTop: '1px solid #ddd', marginBottom: '30px' }}/>
+        <div style={{ 
+          background: 'white', 
+          padding: '25px', 
+          borderRadius: '16px', 
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)', 
+          marginBottom: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '15px' 
+      }}>
+            <input 
+            type="text"
+            placeholder='Note title'
+            value={title}
+            onChange={(e)=>setTitle(e.target.value)}
+            style={{padding:'10px'}}
+            />
+            <textarea 
+            placeholder="What's on your mind"
+            value={description}
+            onChange={(e)=>setDescription(e.target.value)}
+            style={{padding:'10px',minHeight:'80px'}}
+            />
+            <button 
+            onClick={handleAddNote}
+            style={{ 
+                  padding: '14px', 
+                  background: '#7a4caf', 
+                  color: 'white', 
+                  border: 'none', 
+                  cursor: 'pointer', 
+                  borderRadius: '10px', 
+                  fontWeight: 'bold', 
+                  fontSize: '1rem',
+                  transition: 'background 0.3s'
+                }}
+            >Dump</button>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <hr style={{ border: '0', borderTop: '1px solid #ddd', marginBottom: '30px' }} />
+        <div className='notes-list'>
+          {notes.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#888' }}>No thoughts dumped yet...</p>
+          ) : (
+              notes.map((note) => (
+                  <div key={note._id} style={{
+                      background: 'white',
+                      padding: '20px',
+                      borderRadius: '12px',
+                      marginBottom: '20px',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+                      borderLeft: '6px solid #7a4caf',
+                      transition: 'transform 0.2s'
+                  }}>
+                      <h3 style={{ margin: '0 0 8px 0', fontSize: '1.25rem', color: '#1a1a1a' }}>{note.title}</h3>
+                      <p style={{ color: '#4a4a4a', lineHeight: '1.6', margin: '0' }}>{note.description}</p>
+                      <div style={{ marginTop: '12px', fontSize: '0.8rem', color: '#999' }}>
+                          {new Date(note.time).toLocaleString()}
+                      </div>
+                  </div>
+              ))
+          )}
+      </div>
+    </div>
+    )
 }
+
 
 export default App

@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import cors from 'cors'
 import logger from './middleware/logger.js'
 import router from './routes/noteRoutes.js'
 
@@ -7,6 +8,7 @@ const app =express()
 const PORT =5000
 const mongoURI = 'mongodb://localhost:27017/braindump'
 
+app.use(cors())
 app.use(express.json())
 app.use(logger)
 
