@@ -16,7 +16,7 @@ router.post('/',async(req,res)=>{
 
 router.get('/',async (req,res)=>{
     try{
-        const allNotes= await Note.find();
+        const allNotes= await Note.find().sort({time:-1});
         res.status(200).json(allNotes);
     }catch(error){
         res.status(500).json({Error : error.message})
