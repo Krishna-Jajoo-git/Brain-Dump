@@ -16,20 +16,29 @@ router.post('/',auth,async(req,res)=>{
 
 router.get('/',async (req,res)=>{
     try{
-        const allNotes= await Note.find().sort({time:-1});
+        const allNotes= await Note.find().populate('user','username').sort({time:-1});
         res.status(200).json(allNotes);
     }catch(error){
         res.status(500).json({Error : error.message})
     }
 });
 
-router.delete('/:id',async (req,res)=>{
+router.get('/me',auth,async (req,res)=>{
+    try{
+        const myNote =(await Note.find({user:req.user.id})).sort({time:-1})
+        res.status(200).json(myNote)
+    }catch(error){
+        return res.status(500).json({Error : error.message})
+    }
+})
+
+router.delete('/:id',auth,async (req,res)=>{
     try{
         const note=await Note.findById(req.params.id)
         if(!deletedNote){
             return res.status(404).json({message:"Note not found"})
         }
-        if(note.user.toString!=req.user.id){
+        if(note.user.toString()!=req.user.id){
             return res.status(400).json({message :"Not authorised to delete this note"})
         }
         await Note.findByIdAndDelete(req.params.id)
@@ -39,7 +48,7 @@ router.delete('/:id',async (req,res)=>{
     }
 })
 
-router.put('/:id',async (req,res)=>{
+router.put('/:id',auth,async (req,res)=>{
     try{
         const {title,description}=req.body;
         const note=await Note.findById(req.params.id,{title,description},{new: true})
