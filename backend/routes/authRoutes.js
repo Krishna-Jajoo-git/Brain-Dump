@@ -39,7 +39,10 @@ router.post('/login',async (req,res)=>{
             return res.status(400).json({message:"Invalid Email or Password"})
         }
         const token=jwt.sign(
-            {id:user._id},
+            {
+                id:user._id,
+                Role :user.Role
+            },
             process.env.JWT_SECRET,
             {expiresIn:'1d'}
         )
@@ -48,7 +51,8 @@ router.post('/login',async (req,res)=>{
             token,
             id:user._id,
             username:user.username,
-            email:user.email
+            email:user.email,
+            role :user.Role
         })
     }
     catch(error){

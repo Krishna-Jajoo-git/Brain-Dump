@@ -5,7 +5,10 @@ const router=express.Router()
 
 router.post('/',auth,async(req,res)=>{
     try{
-        const {title,description}=req.body;
+        const {title,description,fax_number}=req.body;
+        if(fax_number){
+            return res.status(200).json({message:"posted successfully"})
+        }
         const newNote=new Note({title,description,user:req.user.id})
         const savedNote = await newNote.save();
         res.status(201).json(savedNote)
@@ -38,8 +41,10 @@ router.delete('/:id',auth,async (req,res)=>{
         if(!note){
             return res.status(404).json({message:"Note not found"})
         }
-        if(note.user.toString()!=req.user.id){
-            return res.status(400).json({message :"Not authorised to delete this note"})
+        const isOwner=note.user.toString()===req.user.id
+        const isAdmin=req.user.Role=='admin'
+        if(!isAdmin && !isOwner){
+            return res.status(403).json({message :"Not authorised to delete this note"})
         }
         await Note.findByIdAndDelete(req.params.id)
         res.status(200).json({message:"Note deleted Successfully",note})
