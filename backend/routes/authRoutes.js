@@ -29,7 +29,15 @@ router.post('/register',async (req,res)=>{
 
 router.post('/login',async (req,res)=>{
     try{
-        const {email,password} =req.body
+        const {email,password,captchaToken} =req.body
+        
+        const verifyUrl=`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}`;
+        const response =await fetch(verifyUrl,{method:'POST'})
+        const data =await response.json();
+        if(!data.success){
+            return res.status(400).json({message:"captcha fail"})
+        }
+
         const user = await User.findOne({email})
         if(!user){
             return res.status(400).json({message:"Invalid Email or Password"})
