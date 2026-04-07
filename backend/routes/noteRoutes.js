@@ -1,9 +1,16 @@
 import express, { json } from 'express'
 import Note from '../models/note.js'
 import auth from '../middleware/auth.js'
+import rateLimit from 'express-rate-limit'
 const router=express.Router()
 
-router.post('/',auth,async(req,res)=>{
+const postLimiter=rateLimit({
+    windowMs :2*60*1000,
+    max:10,
+    message: { message: 'Too many notes created, wait for a minute' }
+})
+
+router.post('/',auth,postLimiter,async(req,res)=>{
     try{
         const {title,description,fax_number}=req.body;
         if(fax_number){
@@ -28,7 +35,7 @@ router.get('/',async (req,res)=>{
 
 router.get('/me',auth,async (req,res)=>{
     try{
-        const myNote =(await Note.find({user:req.user.id})).sort({time:-1})
+        const myNote = await Note.find({user:req.user.id}).sort({time:-1})
         res.status(200).json(myNote)
     }catch(error){
         return res.status(500).json({Error : error.message})

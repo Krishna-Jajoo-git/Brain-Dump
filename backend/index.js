@@ -5,23 +5,20 @@ import 'dotenv/config'
 import logger from './middleware/logger.js'
 import router from './routes/noteRoutes.js'
 import authRouter from './routes/authRoutes.js' 
-import rateLimit from 'express-rate-limit'
+
 
 const app =express()
 const PORT =process.env.PORT
 const mongoURI = process.env.MONGO_URI
 
-app.use(cors())
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*',
+    credentials: true,
+}))
 app.use(express.json())
 app.use(logger)
 
-const postLimiter=rateLimit({
-    windowMs :2*60*1000,
-    max:10,
-    message : 'Too many notes created , wait for a minute'
-})
-
-app.use('/api/notes',postLimiter,router)
+app.use('/api/notes',router)
 app.use('/api/auth',authRouter)
 mongoose.connect(mongoURI)
     .then(()=>{ 
@@ -40,3 +37,11 @@ mongoose.connect(mongoURI)
     app.get('/',(req,res)=>{
         res.send(`Welcome to the Brain Dump API!`)
     })
+
+    // Global Error Handler
+    app.use((err, req, res, next) => {
+        console.error(err.stack);
+        res.status(err.status || 500).json({
+            message: err.message || 'Internal Server Error'
+        });
+    });
